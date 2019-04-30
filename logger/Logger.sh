@@ -4,10 +4,10 @@ include logger.util.LoggerUtil
 Logger(){
 	log(){
 		@param the_log_level_for_the_log_message
-		local logLevel=${1}
+		local logLevel=${1}; shift
 
 		@param the_log_message
-		local logMessage=${2}
+		local logMessage="${@}"
 
 		LoggerUtil getLogMsg ${logLevel} ${logMessage}
 	}

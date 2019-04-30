@@ -119,13 +119,13 @@ StringUtil(){
 	toLowerCase(){
 		local str=${@}
 
-		echo ${str,,}
+		printf '%s\n' "$str" | awk '{ print tolower($0) }'
 	}
 
 	toUpperCase(){
 		local str=${@}
 
-		echo ${str^^}
+		printf '%s\n' "$str" | awk '{ print toupper($0) }'
 	}
 
 	trim(){
