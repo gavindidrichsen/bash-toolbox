@@ -8,7 +8,7 @@ main(){
 	)
 
 	for file in ${__files[@]}; do
-		source ${projectDir}bash-toolbox/lib/${file}
+		source ${projectDir}/bash-toolbox/lib/${file}
 	done
 }
 

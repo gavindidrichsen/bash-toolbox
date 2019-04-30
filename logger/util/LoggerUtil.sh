@@ -29,22 +29,20 @@ LoggerUtil(){
 
 	getLogMsg(){
 		local color=null
-		local logLevel=$(StringUtil toUpperCase ${1})
-		local message=$(StringUtil capitalize ${2})
+		local logLevel=$(StringUtil toUpperCase ${1}); shift
+		local message="$@"
 
-		if [[ ${logLevel,,} == error ]]; then
+		if [[ ( ${logLevel} == ERROR) || (${logLevel} == FATAL) ]]; then
 			local color=red
-		elif [[ $logLevel,,} == debug ]]; then
+		elif [[ ${logLevel} == DEBUG ]]; then
 			local color=yellow
-		elif [[ $logLevel,,} == success ]]; then
+		elif [[ ${logLevel} == SUCCESS ]]; then
 			local color=green
 		fi
+		
+		echo -e "[$(CalendarUtil getTimestamp log)] [${logLevel}] $( colorme ${color} "${message}" )"
 
-		echo -e "$(CalendarUtil getTimestamp log) [ ${logLevel} ] $(
-			colorme ${color} $(
-				StringUtil parseMessage message
-			)
-		)"
+		if [[ ${logLevel} == FATAL ]]; then kill 0; fi
 	}
 
 	$@
