@@ -2,11 +2,13 @@
 
 ### Table of Contents
 
-1. [Welcome](#welcome)
-2. [Getting Started](#getting-started)
-3. [Using the toolbox](#using-the-toolbox)
-4. [Contributing](#contributing)
-5. [Roadmap](#roadmap)
+- [Bash Toolbox](#bash-toolbox)
+    - [Table of Contents](#table-of-contents)
+  - [Welcome](#welcome)
+  - [Getting started](#getting-started)
+  - [Using the toolbox](#using-the-toolbox)
+  - [Contributing](#contributing)
+  - [Roadmap](#roadmap)
 
 ## Welcome
 
@@ -58,11 +60,33 @@ include path.to.file.FunctionClassName
 ```
 
 For example, if your script requires the use of the StringValidator function
-class, you'll need to have this in the header of the file after the init source:
+class, then after the initializing the source and including the header ``include string.validator.StringValidator`` a simple usage might be as follows (see **test.sh** for example):
 
 ```bash
+#!/bin/bash
+
+# set projectDir to root directory, parent of the bash-toolbox directory
+projectDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# source the init.sh, gateway into the toolbox
+source "${projectDir}/bash-toolbox/init.sh"
+
+# include (which sources) the ./bash-toolbox/string/validator/StringValidator.sh"
 include string.validator.StringValidator
+
+# exercise the StringValidator beginsWithVowel method"
+result=$( StringValidator beginsWithVowel "Absalom" )
+echo "result = ${result}"
 ```
+
+Running the above will produce something like:
+```bash
+➜  useBashToolkitLibrary git:(master) ✗ ./test.sh
+result = true
+➜  useBashToolkitLibrary git:(master) ✗
+```
+
+
 
 Every path is assumed to be within the bash-toolbox directory, so there is no
 need to explicitly add the bash-toolbox directory (in fact, you can't; it will
