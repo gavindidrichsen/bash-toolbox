@@ -18,12 +18,12 @@ main(){
 	the function output, the "echo"
 	'
 	include logger.Logger
-	debug()   { ( Logger log debug "${@}" ) }
-	info()    { ( Logger log info "${@}" ) }
-	warning() { ( Logger log warning "${@}" ) }
-	error()   { ( Logger log error "${@}" ) }
-	success() { ( Logger log success "${@}" ) }
-	fatal()   { ( Logger log fatal "${@}" ) }
+	debug()   { ( set +x; Logger log debug "${@}" ) }
+	info()    { ( set +x; Logger log info "${@}" ) }
+	warning() { ( set +x; Logger log warning "${@}" ) }
+	error()   { ( set +x; Logger log error "${@}" ) }
+	success() { ( set +x; Logger log success "${@}" ) }
+	fatal()   { ( set +x; Logger log fatal "${@}" ) }
 }
 
 main
