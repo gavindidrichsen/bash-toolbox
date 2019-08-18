@@ -1,5 +1,13 @@
 include logger.util.LoggerUtil
 
+# define global helper messages
+debug()   { ( Logger log debug "${@}" ) }
+info()    { ( Logger log info "${@}" ) }
+warning() { ( Logger log warning "${@}" ) }
+error()   { ( Logger log error "${@}" ) }
+success() { ( Logger log success "${@}" ) }
+fatal()   { ( Logger log fatal "${@}" ) }
+
 @class
 Logger(){
 	log(){
