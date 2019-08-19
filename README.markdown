@@ -65,11 +65,8 @@ class, then after the initializing the source and including the header ``include
 ```bash
 #!/bin/bash
 
-# set projectDir to root directory, parent of the bash-toolbox directory
-projectDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# source the init.sh, gateway into the toolbox
-source "${projectDir}/init.sh"
+# source the bash-toolbox
+source "${BASH_TOOLBOX_DIRECTORY}/init.sh"
 
 # include (which sources) the ./bash-toolbox/string/validator/StringValidator.sh"
 include string.validator.StringValidator
