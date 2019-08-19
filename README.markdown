@@ -46,10 +46,10 @@ leverage the bash-toolbox library.
 
 ## Using the toolbox
 
-As previously mentioned, in order to use the toolbox, you'll need to source it:
+As previously mentioned, in order to use the toolbox, you'll need to source like below where BASH_TOOLBOX_DIRECTORY is the full path location to the bash-toolkit directory:
 
 ```bash
-source bash-toolbox/init.sh
+source "${BASH_TOOLBOX_DIRECTORY}/init.sh"
 ```
 
 Once you've sourced the init script, you can include any of the bash-toolbox
@@ -67,8 +67,6 @@ class, then after the initializing the source and including the header ``include
 
 # source the bash-toolbox
 source "${BASH_TOOLBOX_DIRECTORY}/init.sh"
-
-# include (which sources) the ./bash-toolbox/string/validator/StringValidator.sh"
 include string.validator.StringValidator
 
 # exercise the StringValidator beginsWithVowel method"
