@@ -9,9 +9,6 @@ JsonUtil(){
 
     # Define variables that hold the $ENCODED_ARGS that can be passed
 	# to the script. An existing plain text $ARG_FilE can also be used
-	_argument_file="${__dir}/bargs.json"
-	ENCODED_ARGS=""
-	ARG_FILE="${__dir}/args.json"
 	JSON_SUM_OF_ALL_ARGS="{}"
 	while (( "$#" )); do
 	case "$1" in
@@ -23,17 +20,30 @@ JsonUtil(){
 		_argument_file=$2
 		shift 2
 		;;
+		--) # end argument parsing
+		shift
+		break
+		;;
+		-*|--*=) # unsupported flags
+		error "Error: Unsupported flag $1"
+		usage
+		exit 1
+		;;
+		*) # preserve positional arguments
+		warning "Ignoring script parameter ${1} because no valid flag preceeds it"
+		shift
+		;;
 	esac
 	done
 
 	# either _argument_file or _encoded_json must be valid; otherwise bomb out
 	if [[ ($_argument_file == "" || ! -e $_argument_file) && ($_encoded_json == "") ]]; then
-		error "Either --argfile (default is ${_argument_file}) or --encoded json arguments must be set and valid"
+		error "Either --argfile or --encoded json arguments must be set and valid"
 		exit 1
 	fi
 
 	# If encoded arguments have been supplied, decode them and save to file
-	if [ "X${_encoded_json}" != "X" ]; then
+	if [ "${_encoded_json}" != "" ]; then
 		info "Decoding arguments to ${_argument_file}"
 
 		# Decode the bas64 string and write out the ARG file
@@ -41,13 +51,14 @@ JsonUtil(){
 	fi
 
 	# If the _argument_file has been specified and the file exists read in the arguments
-	if [[ "X${_argument_file}" != "X" ]]; then
+	if [[ "${_argument_file}" != "" ]]; then
 		if [[ ( -f $_argument_file ) ]]; then
 		info "$(echo "Reading JSON vars from ${_argument_file}:"; cat "${_argument_file}" )"
 
 		# combine the --flag arguments with --argsfile values (--flag's will override any values in the --argsfile)
 		# and update the $_argument_file
-		JSON_SUM_OF_ALL_ARGS=$(jq --sort-keys -s '.[0] * .[1]' "${_argument_file}" <(echo "${JSON_SUM_OF_ALL_ARGS}"))
+		# JSON_SUM_OF_ALL_ARGS=$(jq --sort-keys -s '.[0] * .[1]' "${_argument_file}" <(echo "${JSON_SUM_OF_ALL_ARGS}"))
+		JSON_SUM_OF_ALL_ARGS=$(jq --sort-keys -s '.[0]' "${_argument_file}")
 		echo "${JSON_SUM_OF_ALL_ARGS}" | jq --sort-keys '.' > "${_argument_file}"
 
 		# transform the JSON into bash key=value statements
