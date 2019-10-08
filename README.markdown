@@ -7,6 +7,7 @@
   - [Welcome](#welcome)
   - [Getting started](#getting-started)
   - [Using the toolbox](#using-the-toolbox)
+  - [More Example Usages](#more-example-usages)
   - [Contributing](#contributing)
   - [Roadmap](#roadmap)
 
@@ -81,12 +82,26 @@ result = true
 ➜  useBashToolkitLibrary git:(master) ✗
 ```
 
-
-
 Every path is assumed to be within the bash-toolbox directory, so there is no
 need to explicitly add the bash-toolbox directory (in fact, you can't; it will
 fail to include the specified file). With that, you're ready to use the rest of
 the bash-toolbox! Happy coding!
+
+## More Example Usages
+
+Keep your github fork updated as long as the following conditions are true:
+
+* 'upstream' points to the original and 'origin' is your fork
+
+```bash
+#!/bin/bash
+
+# source the bash-toolbox
+source "${BASH_TOOLBOX_DIRECTORY}/init.sh"
+include git.util.GitUtil
+
+GitUtil updateFork
+```
 
 ## Contributing
 
