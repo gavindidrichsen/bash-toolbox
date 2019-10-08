@@ -82,6 +82,20 @@ result = true
 ➜  useBashToolkitLibrary git:(master) ✗
 ```
 
+which will produce sample usage similar to:
+
+```bash
+[2019-10-08 11:48:40] [DEBUG] fetching upstream
+[2019-10-08 11:48:41] [DEBUG] rebasing master with upstream/master
+Already on 'master'
+Your branch is up to date with 'origin/master'.
+Current branch master is up to date.
+Everything up-to-date
+[2019-10-08 11:48:43] [DEBUG] All of my 'gavindidrichsen' branches
+
+[2019-10-08 11:48:43] [DEBUG] rebasing all my branches based off master
+```
+
 Every path is assumed to be within the bash-toolbox directory, so there is no
 need to explicitly add the bash-toolbox directory (in fact, you can't; it will
 fail to include the specified file). With that, you're ready to use the rest of
