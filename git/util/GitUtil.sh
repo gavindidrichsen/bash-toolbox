@@ -94,6 +94,11 @@ GitUtil(){
 		git rebase upstream/master
 		git push origin +master
 
+		git checkout gavindidrichsen/master/sum
+		git fetch --prune
+		git rebase origin/gavindidrichsen/master/sum
+		git push origin +gavindidrichsen/master/sum
+
 		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
 		Logger debug  "All of my 'gavindidrichsen' branches"
 		echo "${list_of_branches}"
