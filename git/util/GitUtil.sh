@@ -91,13 +91,14 @@ GitUtil(){
 		Logger debug  "rebasing master with upstream/master"
 		git checkout master
 		git fetch --prune
+		git rebase origin/master
 		git rebase upstream/master
 		git push origin +master
 
-		git checkout gavindidrichsen/master/sum
+		git checkout master_gavindidrichsen
 		git fetch --prune
-		git rebase origin/gavindidrichsen/master/sum
-		git push origin +gavindidrichsen/master/sum
+		git rebase origin/master_gavindidrichsen
+		git push origin +master_gavindidrichsen
 
 		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
 		Logger debug  "All of my 'gavindidrichsen' branches"
