@@ -82,6 +82,34 @@ GitUtil(){
 		git branch | sed s/\*/\ /g
 	}
 
+	updateFork() {
+		include logger.Logger
+
+		Logger debug "fetching upstream"
+		git fetch upstream --prune
+
+		Logger debug  "rebasing master with upstream/master"
+		git checkout master
+		git fetch --prune
+		git rebase upstream/master
+		git push origin +master
+
+		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
+		Logger debug  "All of my 'gavindidrichsen' branches"
+		echo "${list_of_branches}"
+
+		# update all branches based off master
+		master_branches=$(echo "${list_of_branches}" | grep -v "\/refresh")
+		Logger debug "rebasing all my branches based off master"
+		echo "${master_branches}"
+		for branch in $(echo "${master_branches}"); do
+			Logger info "Updating [${branch}]"
+			git checkout "${branch}"
+			git rebase master
+			git push origin "+${branch}"
+		done
+	}
+
 	local branch=$(Repo getBranch ${@})
 	local buildDir=$(Repo getBuildDir ${branch})
 
