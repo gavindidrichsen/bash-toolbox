@@ -91,7 +91,7 @@ GitUtil(){
 		Logger debug  "rebasing master with upstream/master"
 		git checkout master
 		git fetch --prune
-		# git rebase origin/master # do I want this?
+		# git rebase origin/master # do I want this?  This will ensure any local PRs are also merged into my master
 		git rebase upstream/master
 		git push origin +master
 
@@ -106,6 +106,7 @@ GitUtil(){
 		for branch in $(echo "${master_branches}"); do
 			Logger info "Updating [${branch}]"
 			git checkout "${branch}"
+			git rebase "origin/${branch}"
 			git rebase master
 			git push origin "+${branch}"
 		done
