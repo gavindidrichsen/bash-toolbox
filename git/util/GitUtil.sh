@@ -95,11 +95,22 @@ GitUtil(){
 				return
 			fi
 
-			Logger debug "Merge into ${_branch_with_pr_summation} all changes from ${_branch_to_merge_in}"
+			# remove the local summing branch--if it exists--before creating a new remote one
+			if ! ( git branch -a | egrep "remotes/origin/gavindidrichsen/master/sum" ); then
+				Logger info "Remove local summing branch before creating a new remote one"
+				git branch -q -D "${_branch_with_pr_summation}"
+			fi
+
+			# checkout summing branch (create it remotely and locally if it doesn't already exist)
 			git checkout -B "${_branch_with_pr_summation}"
 			git fetch --prune
+			Logger debug "Merge into ${_branch_with_pr_summation} all changes from ${_branch_to_merge_in}"
+
+			# rebase any remote commits first
 			git rebase "origin/${_branch_with_pr_summation}"
-			git rebase master
+
+			# now rebase in the local branch
+			git rebase "${_branch_to_merge_in}"
 			git push origin "+${_branch_with_pr_summation}"
 		}
 
