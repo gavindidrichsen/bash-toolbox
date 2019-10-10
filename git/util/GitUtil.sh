@@ -85,15 +85,35 @@ GitUtil(){
 	updateFork() {
 		include logger.Logger
 
+
+		local _branch_with_pr_summation="gavindidrichsen/master/sum"
+		_updateSumBranch(){
+			declare _branch_to_merge_in="${1}"
+
+			# don't merge sum branch into itself
+			if [[ "${_branch_to_merge_in}"  == "${_branch_with_pr_summation}" ]]; then
+				return
+			fi
+
+			Logger debug "Merge into ${_branch_with_pr_summation} all changes from ${_branch_to_merge_in}"
+			git checkout -B "${_branch_with_pr_summation}"
+			git fetch --prune
+			git rebase "origin/${_branch_with_pr_summation}"
+			git rebase master
+			git push origin "+${_branch_with_pr_summation}"
+		}
+
 		Logger debug "fetching upstream"
 		git fetch upstream --prune
 
 		Logger debug  "rebasing master with upstream/master"
 		git checkout master
 		git fetch --prune
-		# git rebase origin/master # do I want this?  This will ensure any local PRs are also merged into my master
+		# git rebase origin/master <=== NOT doing this because I always want master to equal upstream/master
 		git rebase upstream/master
 		git push origin +master
+
+		_updateSumBranch "master"
 
 		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
 		Logger debug  "All of my 'gavindidrichsen' branches"
@@ -109,7 +129,15 @@ GitUtil(){
 			git rebase "origin/${branch}"
 			git rebase master
 			git push origin "+${branch}"
+
+			_updateSumBranch "${branch}"
 		done
+
+		local _local_branches_that_can_be_deleted=''; _local_branches_that_can_be_deleted=$(git branch -vv | grep -v "\[origin\/" | awk '{print "git branch -D "$1}' | grep -v "git branch -D \*")
+		if [[ "${_local_branches_that_can_be_deleted}" != '' ]]; then
+			Logger debug "The following local branches have no remote equivalent"
+			echo "${_local_branches_that_can_be_deleted}"
+		fi
 	}
 
 	local branch=$(Repo getBranch ${@})
