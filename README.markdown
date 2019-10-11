@@ -106,6 +106,8 @@ the bash-toolbox! Happy coding!
 Keep your github fork updated as long as the following conditions are true:
 
 * 'upstream' points to the original and 'origin' is your fork
+* GitUtil updateFork will create a gavindidrichsen/master/sum branch that is the accumulation of all branches with regex "/master/pr/"
+* GitUtil updateFork "refresh/2019q3" will create a gavindidrichsen/refresh/2019q3/sum branch that is based off the "refresh/2019q3" branch and is an accumulation of all branches with regex "/refresh/2019q3/pr/"
 
 ```bash
 #!/bin/bash
@@ -115,6 +117,7 @@ source "${BASH_TOOLBOX_DIRECTORY}/init.sh"
 include git.util.GitUtil
 
 GitUtil updateFork
+GitUtil updateFork "refresh/2019"
 ```
 
 ## Contributing
