@@ -89,11 +89,6 @@ GitUtil(){
 		_updateSumBranch(){
 			declare _branch_to_merge_in="${1}"
 
-			# don't merge sum branch into itself
-			if [[ "${_branch_to_merge_in}"  == "${_branch_with_pr_summation}" ]]; then
-				return
-			fi
-
 			# remove the local summing branch--if it exists--before creating a new remote one
 			if ! ( git branch -a | egrep "remotes/origin/${_branch_with_pr_summation}" ); then
 				Logger info "Removing local summing branch before creating a new remote one"
@@ -106,10 +101,21 @@ GitUtil(){
 			# rebase any remote commits first
 			git rebase "origin/${_branch_with_pr_summation}"
 
-			# now rebase in the local branch
-			Logger debug "Merge into ${_branch_with_pr_summation} all changes from ${_branch_to_merge_in}"
-			git rebase "${_branch_to_merge_in}"
-			git push origin "+${_branch_with_pr_summation}"
+			# now create a sum branch only if the $filename exists
+			local filename=".sumbranch_${_branch_to_merge_in//\//_}"
+
+			if ! [[ -f "${filename}" ]]; then
+				info "not creating a sum because no summing file ${filename}"
+				return
+			fi
+
+			debug "summing latest changes into ${_branch_with_pr_summation}"
+			local result=$( cat "${filename}")
+			while read line; do
+				info "merging ${line}"
+				git rebase "${line}"
+			    git push origin "+${_branch_with_pr_summation}"
+			done <<< "${result}"
 		}
 
 		Logger debug "fetching upstream"
@@ -118,12 +124,9 @@ GitUtil(){
 
 		Logger debug  "rebasing ${_base_branch} with upstream/${_base_branch}"
 		git checkout ${_base_branch}
-		# git fetch --prune
-		# git rebase origin/${_base_branch} <=== NOT doing this because I always want ${_base_branch} to equal upstream/${_base_branch}
+		# git rebase origin/${_base_branch} <=== NOT doing this because I always want origin/${_base_branch} to equal upstream/${_base_branch}
 		git rebase upstream/${_base_branch}
 		git push origin +${_base_branch}
-
-		_updateSumBranch "${_base_branch}"
 
 		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
 		# Logger debug  "All of my 'gavindidrichsen' branches"
@@ -140,9 +143,9 @@ GitUtil(){
 			git rebase "origin/${branch}"
 			git rebase ${_base_branch}
 			git push origin "+${branch}"
-
-			_updateSumBranch "${branch}"
 		done
+
+		_updateSumBranch "${_base_branch}"
 
 		# local _local_branches_that_can_be_deleted=''; _local_branches_that_can_be_deleted=$(git branch -vv | grep -v "\[origin\/" | awk '{print "git branch -D "$1}' | grep -v "git branch -D \*")
 		# if [[ "${_local_branches_that_can_be_deleted}" != '' ]]; then
