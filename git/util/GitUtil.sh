@@ -89,10 +89,18 @@ GitUtil(){
 		_updateSumBranch(){
 			declare _branch_to_merge_in="${1}"
 
-			# remove the local summing branch--if it exists--before creating a new remote one
-			if ! ( git branch -a | egrep "remotes/origin/${_branch_with_pr_summation}" ); then
-				Logger info "Removing local summing branch before creating a new remote one"
+			# remove the local summing branch if it doesn't exist on remote
+			if ! ( git branch -a | egrep "remotes/origin/${_branch_with_pr_summation}" ) &&
+				(git rev-parse --verify --quiet "${_branch_with_pr_summation}"); then
+				Logger debug "removing local summing branch since it doesn't exist on the remote"
 				git branch -D "${_branch_with_pr_summation}"
+			fi
+
+			# create a sum branch only if the $filename exists
+			local filename=".sumbranch_${_branch_to_merge_in//\//_}"
+			if ! [[ -f "${filename}" ]]; then
+				Logger debug "since \"${filename}\" file doesn't exist, not creating a sum branch"
+				return
 			fi
 
 			# checkout summing branch (create it remotely and locally if it doesn't already exist)
@@ -100,14 +108,6 @@ GitUtil(){
 			git fetch --prune
 			# rebase any remote commits first
 			git rebase "origin/${_branch_with_pr_summation}"
-
-			# now create a sum branch only if the $filename exists
-			local filename=".sumbranch_${_branch_to_merge_in//\//_}"
-
-			if ! [[ -f "${filename}" ]]; then
-				info "not creating a sum because no summing file ${filename}"
-				return
-			fi
 
 			debug "summing latest changes into ${_branch_with_pr_summation}"
 			local result=$( cat "${filename}")
