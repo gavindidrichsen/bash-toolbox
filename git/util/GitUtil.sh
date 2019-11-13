@@ -96,20 +96,21 @@ GitUtil(){
 				git branch -D "${_branch_with_pr_summation}"
 			fi
 
-			# create a sum branch only if the $filename exists
+			# bomb out if '.sumbranch_*' doesn't exist
 			local filename=".sumbranch_${_branch_to_merge_in//\//_}"
 			if ! [[ -f "${filename}" ]]; then
 				Logger debug "since \"${filename}\" file doesn't exist, not creating a sum branch"
 				return
 			fi
 
-			# checkout summing branch (create it remotely and locally if it doesn't already exist)
+			# otherwise, checkout summing branch (create it remotely and locally if it doesn't already exist)
 			git checkout -B "${_branch_with_pr_summation}"
 			git fetch --prune
+			
 			# rebase any remote commits first
 			git rebase "origin/${_branch_with_pr_summation}"
 
-			debug "summing latest changes into ${_branch_with_pr_summation}"
+			debug "sum latest changes into ${_branch_with_pr_summation}"
 			local result=$( cat "${filename}")
 			while read line; do
 				info "merging ${line}"
@@ -118,7 +119,7 @@ GitUtil(){
 			done <<< "${result}"
 		}
 
-		Logger debug "fetching upstream"
+		Logger debug "fetching upstream and origin"
 		git fetch upstream --prune
 		git fetch origin --prune
 

@@ -1,23 +1,15 @@
 include logger.util.LoggerUtil
 
-# define global helper messages
-debug()   { ( Logger log debug "${@}" ) }
-info()    { ( Logger log info "${@}" ) }
-warning() { ( Logger log warning "${@}" ) }
-error()   { ( Logger log error "${@}" ) }
-success() { ( Logger log success "${@}" ) }
-fatal()   { ( Logger log fatal "${@}" ) }
-
 @class
 Logger(){
 	log(){
-		@param the_log_level_for_the_log_message
-		local logLevel=${1}; shift
+		# ensure that all tracing is disabled within the logging code
+		{
+			local logLevel=${1}; shift
+			local logMessage="${@}"
 
-		@param the_log_message
-		local logMessage="${@}"
-
-		LoggerUtil getLogMsg ${logLevel} ${logMessage}
+			LoggerUtil getLogMsg ${logLevel} ${logMessage}
+		} 2> /dev/null
 	}
 
 	${@}
