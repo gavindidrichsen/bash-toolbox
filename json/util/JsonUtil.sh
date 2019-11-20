@@ -1,3 +1,5 @@
+include logger.Logger
+
 @class
 JsonUtil(){
 	parseArgFile() {
@@ -25,7 +27,7 @@ JsonUtil(){
 		break
 		;;
 		-*|--*=) # unsupported flags
-		error "Error: Unsupported flag $1"
+		Logger log error "Error: Unsupported flag $1"
 		usage
 		exit 1
 		;;
@@ -38,13 +40,13 @@ JsonUtil(){
 
 	# either _argument_file or _encoded_json must be valid; otherwise bomb out
 	if [[ ($_argument_file == "" || ! -e $_argument_file) && ($_encoded_json == "") ]]; then
-		error "Either --argfile or --encoded json arguments must be set and valid"
+		Logger log error "Either --argfile or --encoded json arguments must be set and valid"
 		exit 1
 	fi
 
 	# If encoded arguments have been supplied, decode them and save to file
 	if [ "${_encoded_json}" != "" ]; then
-		info "Decoding arguments to ${_argument_file}"
+		Logger log info "Decoding arguments to ${_argument_file}"
 
 		# Decode the bas64 string and write out the ARG file
 		echo "${_encoded_json}" | base64 --decode | jq . > "${_argument_file}"
@@ -53,7 +55,7 @@ JsonUtil(){
 	# If the _argument_file has been specified and the file exists read in the arguments
 	if [[ "${_argument_file}" != "" ]]; then
 		if [[ ( -f $_argument_file ) ]]; then
-		info "$(echo "Reading JSON vars from ${_argument_file}:"; cat "${_argument_file}" )"
+		Logger log info "$(echo "Reading JSON vars from ${_argument_file}:"; cat "${_argument_file}" )"
 
 		# combine the --flag arguments with --argsfile values (--flag's will override any values in the --argsfile)
 		# and update the $_argument_file
@@ -65,10 +67,10 @@ JsonUtil(){
 		VARS=$(echo ${JSON_SUM_OF_ALL_ARGS} | jq -r '. | keys[] as $k | "\($k)=\"\(.[$k])\""' )
 		# ensure that key's that are arrays are in the correct format (..) instead of "[..]"
 		VARS=$(echo "${VARS}" | sed 's/\"\[/(/g' | sed 's/\]\"/)/g' | sed 's/,/ /g' )
-		info "$(echo "Evaluating the following bash variables:"; echo "${VARS}")"
+		Logger log info "$(echo "Evaluating the following bash variables:"; echo "${VARS}")"
 
 		# Evaluate all the vars in the arguments
-		info "Evaluating the json arguments as bash variables"
+		Logger log info "Evaluating the json arguments as bash variables"
 		while read -r line; do
 			eval "$line"
 		done <<< "$VARS"

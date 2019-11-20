@@ -92,14 +92,14 @@ GitUtil(){
 			# remove the local summing branch if it doesn't exist on remote
 			if ! ( git branch -a | egrep "remotes/origin/${_branch_with_pr_summation}" ) &&
 				(git rev-parse --verify --quiet "${_branch_with_pr_summation}"); then
-				Logger debug "removing local summing branch since it doesn't exist on the remote"
+				Logger log debug "removing local summing branch since it doesn't exist on the remote"
 				git branch -D "${_branch_with_pr_summation}"
 			fi
 
 			# bomb out if '.sumbranch_*' doesn't exist
 			local filename=".sumbranch_${_branch_to_merge_in//\//_}"
 			if ! [[ -f "${filename}" ]]; then
-				Logger debug "since \"${filename}\" file doesn't exist, not creating a sum branch"
+				Logger log debug "since \"${filename}\" file doesn't exist, not creating a sum branch"
 				return
 			fi
 
@@ -110,36 +110,36 @@ GitUtil(){
 			# rebase any remote commits first
 			git rebase "origin/${_branch_with_pr_summation}"
 
-			debug "sum latest changes into ${_branch_with_pr_summation}"
+			Logger log info "sum latest changes into ${_branch_with_pr_summation}"
 			local result=$( cat "${filename}")
 			while read line; do
-				info "merging ${line}"
+				Logger log debug "merging ${line}"
 				git rebase "${line}"
 			    git push origin "+${_branch_with_pr_summation}"
 			done <<< "${result}"
 		}
 
-		Logger debug "fetching upstream and origin"
+		Logger log debug "fetching upstream and origin"
 		git fetch upstream --prune
 		git fetch origin --prune
 
-		Logger debug  "rebasing ${_base_branch} with upstream/${_base_branch}"
+		Logger log debug  "rebasing ${_base_branch} with upstream/${_base_branch}"
 		git checkout ${_base_branch}
 		# git rebase origin/${_base_branch} <=== NOT doing this because I always want origin/${_base_branch} to equal upstream/${_base_branch}
 		git rebase upstream/${_base_branch}
 		git push origin +${_base_branch}
 
 		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
-		# Logger debug  "All of my 'gavindidrichsen' branches"
+		# Logger log debug  "All of my 'gavindidrichsen' branches"
 		# echo "${list_of_branches}"
 
 		# update all branches based off master
 		pr_branches=$(echo "${list_of_branches}" | grep "/${_base_branch}/pr/")
-		Logger debug "list of pr branches based off ${_base_branch}"
+		Logger log debug "list of pr branches based off ${_base_branch}"
 		echo "${pr_branches}"
 
 		for branch in $(echo "${pr_branches}"); do
-			Logger info "Updating [${branch}]"
+			Logger log info "Updating [${branch}]"
 			git checkout "${branch}"
 			git rebase "origin/${branch}"
 			git rebase ${_base_branch}
@@ -150,7 +150,7 @@ GitUtil(){
 
 		# local _local_branches_that_can_be_deleted=''; _local_branches_that_can_be_deleted=$(git branch -vv | grep -v "\[origin\/" | awk '{print "git branch -D "$1}' | grep -v "git branch -D \*")
 		# if [[ "${_local_branches_that_can_be_deleted}" != '' ]]; then
-		# 	Logger debug "The following local branches have no remote equivalent so MAY be deleted"
+		# 	Logger log debug "The following local branches have no remote equivalent so MAY be deleted"
 		# 	echo "${_local_branches_that_can_be_deleted}"
 		# fi
 	}
