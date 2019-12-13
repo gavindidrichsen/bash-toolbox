@@ -90,8 +90,8 @@ GitUtil(){
 		git fetch origin --prune
 
 		# return if no differences between upstream and origin
-		if (*git --no-pager diff --exit-code --quiet ${_base_branch} upstream/${_base_branch}); then
-			Logger log info "no difference between ${_base_branch} upstream/${_base_branch})"
+		if (git --no-pager diff --exit-code --quiet ${_base_branch} upstream/${_base_branch}); then
+			Logger log info "no difference between ${_base_branch} upstream/${_base_branch}"
 			return
 		fi
 
@@ -105,12 +105,13 @@ GitUtil(){
 		git rebase upstream/${_base_branch}
 		git push origin +${_base_branch}
 
-		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrich[s]{0,1}en\/)(.*)/')
-		# Logger log info  "All of my 'gavindidrichsen' branches"
+		list_of_branches=$( git branch -a --sort=-committerdate | perl -nle 'print "$1$2" if /(?<=remotes\/origin\/)(gavindidrichsen\/)(.*)/')
 		# echo "${list_of_branches}"
 
 		# update all branches based off master
-		pr_branches=$(echo "${list_of_branches}" | grep "/${_base_branch}/pr/")
+		regex_of_base_branch=$(echo "${_base_branch}" | sed 's|/|\\/|g')
+		pr_branches=$(echo "${list_of_branches}" | grep "/${regex_of_base_branch}/")
+
 		Logger log info "list of pr branches based off ${_base_branch}"
 		echo "${pr_branches}"
 
@@ -165,10 +166,89 @@ GitUtil(){
 		done <<< "${result}"
 	}
 
-	local branch=$(Repo getBranch ${@})
-	local buildDir=$(Repo getBuildDir ${branch})
+	patch() {
+        local pr_number=""
+        local base_branch=""
+        while [[ $# -gt 0 ]]
+        do
+        key="$1"
 
-	local _log="Logger log"
+        case $key in
+            --pr)
+            pr_number="$2"
+            shift # past argument
+            shift # past value
+            ;;
+            --from)
+            base_branch="$2"
+            shift # past argument
+            shift # past value
+            ;;
+            --onto)
+            rebasing_branch="$2"
+            shift # past argument
+            shift # past value
+            ;;
+            *)    # unknown option
+            shift # past argument
+            ;;
+        esac
+        done
+
+        Logger log debug "fetching PR ${pr_number}"
+        local pr_reference_branch="pr/${base_branch}/${pr_number}"
+        git fetch --force --verbose origin pull/${pr_number}/head:${pr_reference_branch}
+
+        Logger log debug "creating the patch files for difference between ${base_branch}..${pr_reference_branch}"
+        local patch_directory="${__dir}/patches/${pr_reference_branch}"
+        mkdir -p ${patch_directory}
+        git format-patch ${base_branch}..${pr_reference_branch} -o ${patch_directory}
+        
+        Logger log debug "patching PR ${pr_number} onto ${rebasing_branch}"
+        git checkout ${rebasing_branch}
+        git am ${patch_directory}/*.patch
+    }
+
+    rebase_branch() {
+        local base_branch=""
+        local new_branch_name=""
+        local should_be_recreated="false"
+        while [[ $# -gt 0 ]]
+        do
+        key="$1"
+
+        case $key in
+            --from)
+            base_branch="$2"
+            shift # past argument
+            shift # past value
+            ;;
+            --called)
+            new_branch_name="$2"
+            shift # past argument
+            shift # past value
+            ;;
+            --delete-and-recreate)
+            should_be_recreated="true"
+            shift # past argument
+            ;;
+            *)    # unknown option
+            shift # past argument
+            ;;
+        esac
+        done
+
+        # either create or rebase the branch
+        if (! git branch | grep "${new_branch_name}") || [[ "${should_be_recreated}" = "true" ]]; then 
+            Logger log info "creating '${new_branch_name}' branch from '${base_branch}'"
+            git checkout ${base_branch}
+            git branch -D ${new_branch_name} || Logger log debug "${new_branch_name} already deleted"
+            git checkout -b ${new_branch_name} ${base_branch}
+        else
+            Logger log info  "rebasing '${new_branch_name}' branch with '${base_branch}'"
+            git rebase ${base_branch} ${new_branch_name} 
+        fi
+    }
 
 	$@
 }
